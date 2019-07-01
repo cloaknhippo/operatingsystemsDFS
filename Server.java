@@ -1,112 +1,141 @@
 // A Java program for a Server 
-import java.net.*;
+
+import java.io.*;
+import java.net.ServerSocket;
+import java.net.Socket;
+ 
+public class Server
+{
+ 
+    private static Socket socket;
+ 
+    public static void main(String[] args)
+    {
+        try
+        {
+ 
+            int port = 5000;
+            ServerSocket serverSocket = new ServerSocket(port);
+            System.out.println("Server Started and listening to the port 5000");
+            
+            System.out.println("Waiting for a client...");
+ 
+            //Server is running always. This is done using this while(true) loop
+            while(true)
+            {
+                //Reading the message from the client, Connection
+                socket = serverSocket.accept();
+                System.out.println("Client connected.");
+                
+                //Read from keyboard
+                BufferedReader keyRead = new BufferedReader(new InputStreamReader(System.in));
+                
+                //Send to client, and logic to send to dataNode
+                OutputStream ostream = socket.getOutputStream();
+                PrintWriter pwrite = new PrintWriter(ostream, true);
+                
+                //Receive from server, and logic to receive from dataNode
+                InputStream istream = socket.getInputStream();
+                BufferedReader receiveRead = new BufferedReader(new InputStreamReader(istream));
+                
+                String receiveMessage, sendMessage;
+                
+ 
+                while(true)
+                {
+                	receiveMessage = receiveRead.readLine();
+                	if((receiveMessage.equals("APPEND")))
+					{
+						// For debugging purposes, to be removed in final edition
+						System.out.println("1, Client wishes to APPEND.");
+						// This is where we call the logic for APPEND
+					}
+					else if((receiveMessage.equals("READ")))
+					{
+						// For debugging purposes, to be removed in final edition
+						System.out.println("2, Client wishes to READ.");
+						// This is where we call the logic for READ
+					}
+					else
+					{
+						System.out.println("3, Client entered unacepptable input.");
+					}
+                }
+            }
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+        finally
+        {
+            try
+            {
+                socket.close();
+            }
+            catch(Exception e){}
+        }
+    }
+}
+
+
+/*
+ *  This has been an attempt to work with multi-threading, but we couldn't get it to work this early.
+To be returned to once we have more time to work on it
+ * 
+ * import java.net.*;
 import java.io.*; 
 import java.text.*;
 import java.util.*;
 
-/*
-public class Server 
-{ 
-	//initialize socket and input stream 
-	private Socket		  socket = null; 
-	private ServerSocket  server = null; 
-	private DataInputStream in	 = null; 
-
-	// constructor with port 
-	public Server(int port) 
-	{ 
-		// starts server and waits for a connection 
-		try
-		{ 
-			server = new ServerSocket(port); 
-			System.out.println("Server started"); 
-
-			System.out.println("Waiting for a client ..."); 
-
-			socket = server.accept(); 
-			System.out.println("Client accepted"); 
-
-			// takes input from the client socket 
-			in = new DataInputStream( 
-				new BufferedInputStream(socket.getInputStream())); 
-
-			String line = ""; 
-
-			// reads message from client until "Over" is sent 
-			while (!line.equals("Over")) 
-			{ 
-				try
-				{ 
-					line = in.readUTF(); 
-					System.out.println(line); 
-				} 
-				catch(IOException i) 
-				{ 
-					System.out.println(i); 
-				} 
-			} 
-			System.out.println("Closing connection"); 
-
-			// close connection 
-			socket.close(); 
-			in.close(); 
-		} 
-		catch(IOException i) 
-		{ 
-			System.out.println(i); 
-		} 
-	} 
-
-	public static void main(String args[]) 
-	{ 
-		Server server = new Server(5000); 
-	} 
-} 
-
-	/*
-
 public class Server  
 { 
-    public static void main(String[] args) throws IOException  
-    { 
-        // server is listening on port 5000
-        ServerSocket ss = new ServerSocket(5000); 
-          
-        // running infinite loop for getting 
-        // client request 
-        while (true)  
-        { 
-            Socket s = null; 
-              
-            try 
-            { 
-            	System.out.println("Waiting for a client ..."); 
-            	
-                // socket object to receive incoming client requests 
-                s = ss.accept(); 
-                  
-                System.out.println("A new client is connected : " + s); 
-                  
-                // obtaining input and out streams 
-                DataInputStream dis = new DataInputStream(s.getInputStream()); 
-                DataOutputStream dos = new DataOutputStream(s.getOutputStream()); 
-                  
-                System.out.println("Assigning new thread for this client"); 
-  
-                // create a new thread object 
-                Thread t = new ClientHandler(s, dis, dos); 
-  
-                // Invoking the start() method 
-                t.start(); 
-                  
-            } 
-            catch (Exception e){ 
-                s.close(); 
-                e.printStackTrace(); 
-            } 
-        } 
-    } 
+public static void main(String[] args) throws IOException  
+{ 
+  // server is listening on port 5000
+  ServerSocket ss = new ServerSocket(5000); 
+    
+  // running infinite loop for getting 
+  // client request 
+  while (true)  
+  { 
+      Socket s = null; 
+        
+      try 
+      { 
+      	System.out.println("Waiting for a client ..."); 
+      	
+          // socket object to receive incoming client requests 
+          s = ss.accept(); 
+            
+          System.out.println("A new client is connected : " + s); 
+            
+          // obtaining input and out streams 
+          DataInputStream dis = new DataInputStream(s.getInputStream()); 
+          DataOutputStream dos = new DataOutputStream(s.getOutputStream()); 
+            
+          System.out.println("Assigning new thread for this client"); 
+
+          // create a new thread object 
+          Thread t = new ClientHandler(s, dis, dos); 
+
+          // Invoking the start() method 
+          t.start(); 
+            
+      } 
+      catch (Exception e){ 
+          s.close(); 
+          e.printStackTrace(); 
+      } 
+  } 
 } 
+} 
+
+*/
+/* 
+ * 
+ *  This has been an attempt to work with multi-threading, but we couldn't get it to work this early.
+To be returned to once we have more time to work on it
 
 //ClientHandler class 
 class ClientHandler extends Thread  
@@ -137,7 +166,7 @@ class ClientHandler extends Thread
 	        	 // Ask user what he wants 
 	             dos.writeUTF("What do you want?[Append | Read]..\n"+ 
 	                         "Type Exit to terminate connection."); 
-               
+             
 	             // receive the answer from client 
 	             received = dis.readUTF(); 
 	               
@@ -174,92 +203,15 @@ class ClientHandler extends Thread
 			}
 			catch (IOException e) { e.printStackTrace(); }
 		}
-       
-     try
-     { 
-         // closing resources 
-         this.dis.close(); 
-         this.dos.close(); 
-           
-     }
-     catch(IOException e) { e.printStackTrace(); } 
+     
+   try
+   { 
+       // closing resources 
+       this.dis.close(); 
+       this.dos.close(); 
+         
+   }
+   catch(IOException e) { e.printStackTrace(); } 
 	}
 }
 	*/
-/*
-
-*/
-
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.net.ServerSocket;
-import java.net.Socket;
- 
-public class Server
-{
- 
-    private static Socket socket;
- 
-    public static void main(String[] args)
-    {
-        try
-        {
- 
-            int port = 5000;
-            ServerSocket serverSocket = new ServerSocket(port);
-            System.out.println("Server Started and listening to the port 5000");
-            
-            System.out.println("Waiting for a client...");
- 
-            //Server is running always. This is done using this while(true) loop
-            while(true)
-            {
-                //Reading the message from the client
-                socket = serverSocket.accept();
-                InputStream is = socket.getInputStream();
-                InputStreamReader isr = new InputStreamReader(is);
-                BufferedReader br = new BufferedReader(isr);
-                String number = br.readLine();
-                System.out.println("Message received from client is "+number);
- 
-                //Multiplying the number by 2 and forming the return message
-                String returnMessage;
-                try
-                {
-                    int numberInIntFormat = Integer.parseInt(number);
-                    int returnValue = numberInIntFormat*2;
-                    returnMessage = String.valueOf(returnValue) + "\n";
-                }
-                catch(NumberFormatException e)
-                {
-                    //Input was not a number. Sending proper message back to client.
-                    returnMessage = "Please send a proper number\n";
-                }
- 
-                //Sending the response back to the client.
-                OutputStream os = socket.getOutputStream();
-                OutputStreamWriter osw = new OutputStreamWriter(os);
-                BufferedWriter bw = new BufferedWriter(osw);
-                bw.write(returnMessage);
-                System.out.println("Message sent to the client is "+returnMessage);
-                bw.flush();
-            }
-        }
-        catch (Exception e)
-        {
-            e.printStackTrace();
-        }
-        finally
-        {
-            try
-            {
-                socket.close();
-            }
-            catch(Exception e){}
-        }
-    }
-}
